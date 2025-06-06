@@ -484,8 +484,9 @@ export default {
     },
     // 加载首帧视频，模拟出封面图
     loadFirstFrame() {
-      let { autoplay, muted } = this.renderProps
+      let { autoplay, poster, muted } = this.renderProps
       if (this.isApple()) {
+        if (poster) return
         this.videoEl.play()
         if (!autoplay) {
           this.videoEl.pause()
@@ -497,6 +498,7 @@ export default {
          * 解决：在自动播放时，先将视频静音，然后延迟调用 play 方法，播放视频
          * 说明：iOS 的 Safari 内核不会有这个，仅在 Android 设备出现，即使有这个报错也不影响的，所以不介意控制台报错的话是可以删掉这个 timeout 的
          */
+        if (poster) return
         this.videoEl.muted = true
         setTimeout(() => {
           this.videoEl.play()
