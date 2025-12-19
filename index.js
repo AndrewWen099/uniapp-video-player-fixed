@@ -1,7 +1,7 @@
-import DomVideoPlayer from './src/DomVideoPlayer.vue';
+import DomVideoPlayerFixed from './src/DomVideoPlayerFixed.vue';
 
-export default DomVideoPlayer;
+export default DomVideoPlayerFixed;
 
 export function install(Vue) {
-  Vue.component('DomVideoPlayer', DomVideoPlayer);
+  Vue.component('DomVideoPlayerFixed', DomVideoPlayerFixed);
 }

@@ -1,7 +1,7 @@
 <template>
   <view>
     <view style="width: 750rpx;height: 400rpx;">
-      <DomVideoPlayer
+      <DomVideoPlayerFixed
         ref="domVideoPlayer"
         object-fit='contain'
         :controls="controls"
