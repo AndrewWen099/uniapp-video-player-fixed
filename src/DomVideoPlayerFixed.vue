@@ -104,7 +104,9 @@
 				// 新增：是否显示全屏按钮
 				showFullscreenButton: false,
 				// 新增：是否全屏状态
-				isFullscreen: false
+				isFullscreen: false,
+				wasPlayingBeforeFullscreen: false, // 新增：保存全屏前的播放状态
+				wasCurrentTimeBeforeFullscreen: 0 // 新增：保存全屏前的时间点
 			}
 		},
 		mounted() {
@@ -280,10 +282,18 @@
 			},
 			// 新增：手动触发全屏
 			triggerFullscreen() {
-				this.renderFunc = {
-					name: 'triggerFullscreenWithButton',
-					params: null
-				}
+				// 先暂停原视频
+				this.eventCommand = 'pause'
+
+				// 短暂延迟后触发全屏
+				setTimeout(() => {
+					this.renderFunc = {
+						name: 'triggerFullscreenWithButton',
+						params: {
+							paused: true
+						} // 传递暂停状态
+					}
+				}, 50)
 			}
 		}
 	}
@@ -609,6 +619,13 @@
 			enterLandscapeFullscreen() {
 				if (!this.videoEl) return
 
+				// 先暂停原视频并保存状态
+				const wasPlaying = !this.videoEl.paused
+				if (wasPlaying) {
+					this.videoEl.pause()
+				}
+				this.wasPlayingBeforeFullscreen = wasPlaying
+				this.wasCurrentTimeBeforeFullscreen = this.videoEl.currentTime
 				// 创建全屏容器
 				const container = document.createElement('div')
 				container.className = 'video-landscape-container'
@@ -618,13 +635,34 @@
 				const videoClone = this.videoEl.cloneNode(true)
 				videoClone.className = 'video-landscape-fullscreen'
 				videoClone.controls = true // 横屏全屏时显示控件
+				videoClone.currentTime = this.wasCurrentTimeBeforeFullscreen || 0
 
 				// 添加退出按钮
 				const exitButton = document.createElement('button')
 				exitButton.className = 'video-landscape-button'
 				exitButton.innerHTML =
 					'<img src="https://zeno-img.oss-cn-shenzhen.aliyuncs.com/image_17662199265742063c6b1214e62c83fef7db2832faa03.png" alt="退出全屏" />'
-				exitButton.onclick = () => this.exitLandscapeFullscreen()
+				exitButton.onclick = () => {
+					// 获取全屏视频的当前时间
+					const fullscreenCurrentTime = videoClone.currentTime
+
+					// 退出全屏
+					this.exitLandscapeFullscreen()
+
+					// 恢复原视频的时间点
+					if (this.videoEl) {
+						this.videoEl.currentTime = fullscreenCurrentTime
+						// 如果之前是播放状态，恢复播放
+						if (this.wasPlayingBeforeFullscreen) {
+							setTimeout(() => {
+								this.videoEl.play().catch(e => {
+									console.log('Resume play prevented:', e)
+								})
+							}, 300)
+						}
+					}
+				}
+
 
 				// 添加到容器
 				container.appendChild(videoClone)
@@ -633,9 +671,16 @@
 				// 添加到body
 				document.body.appendChild(container)
 
-				// 播放视频
+				// 全屏视频播放
 				setTimeout(() => {
-					videoClone.play().catch(e => console.log('Auto-play prevented:', e))
+					videoClone.play().catch(e => {
+						console.log('Auto-play prevented:', e)
+						// 如果自动播放被阻止，手动播放
+						setTimeout(() => {
+							videoClone.play().catch(e2 => console.log(
+								'Manual play also prevented:', e2))
+						}, 100)
+					})
 				}, 100)
 
 				// 发送全屏事件
@@ -648,6 +693,9 @@
 				if (this.fullscreenButtonEl) {
 					this.fullscreenButtonEl.style.display = 'none'
 				}
+
+				// 通知父组件隐藏状态栏
+				this.$ownerInstance.callMethod('hideStatusBar')
 			},
 			// 退出横屏全屏模式
 			exitLandscapeFullscreen() {
@@ -656,6 +704,8 @@
 					// 暂停视频
 					const video = container.querySelector('.video-landscape-fullscreen')
 					if (video) {
+						video.pause()
+
 						const currentTime = video.currentTime
 						// 同步时间到原视频
 						if (this.videoEl) {
@@ -674,11 +724,22 @@
 
 					// 重新显示按钮
 					this.updateFullscreenButton()
+
+					// 通知父组件显示状态栏
+					this.$ownerInstance.callMethod('showStatusBar')
 				}
 			},
 			// 通过按钮触发全屏 - 修复版
 			triggerFullscreenWithButton() {
 				if (!this.videoEl) return
+
+				// 先暂停原视频
+				const wasPlaying = !this.videoEl.paused
+				if (wasPlaying) {
+					this.videoEl.pause()
+				}
+
+				this.wasPlayingBeforeFullscreen = wasPlaying
 
 				const handleError = (error) => {
 					console.warn('Fullscreen error (handled):', error.message || error)
@@ -721,6 +782,8 @@
 
 				// 立即执行
 				attemptFullscreen()
+				// 通知父组件隐藏状态栏
+				this.$ownerInstance.callMethod('hideStatusBar')
 			},
 			// 创建视频字幕
 			createTrack() {
@@ -967,8 +1030,21 @@
 						let isFullScreen = null
 						if (presentationMode === 'fullscreen') {
 							isFullScreen = true
+							// 通知隐藏状态栏
+							this.$ownerInstance.callMethod('hideStatusBar')
+
 						} else {
 							isFullScreen = false
+							// 通知显示状态栏
+							this.$ownerInstance.callMethod('showStatusBar')
+							// 如果之前是播放状态，恢复播放
+							if (this.wasPlayingBeforeFullscreen) {
+								setTimeout(() => {
+									this.videoEl.play().catch(e => {
+										console.log('Resume play prevented:', e)
+									})
+								}, 300)
+							}
 						}
 						this.$ownerInstance.callMethod('eventEmit', {
 							event: 'fullscreenchange',
@@ -985,8 +1061,20 @@
 						let isFullScreen = null
 						if (document.fullscreenElement) {
 							isFullScreen = true
+							// 通知隐藏状态栏
+							this.$ownerInstance.callMethod('hideStatusBar')
 						} else {
 							isFullScreen = false
+							// 通知显示状态栏
+							this.$ownerInstance.callMethod('showStatusBar')
+							// 如果之前是播放状态，恢复播放
+							if (this.wasPlayingBeforeFullscreen) {
+								setTimeout(() => {
+									this.videoEl.play().catch(e => {
+										console.log('Resume play prevented:', e)
+									})
+								}, 300)
+							}
 						}
 						this.$ownerInstance.callMethod('eventEmit', {
 							event: 'fullscreenchange',
