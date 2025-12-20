@@ -1,4 +1,4 @@
-# `uniapp-video-player` —— 基于 HTML5 video 标签开发出来，适用于 uni-app 的高自由度视频播放器（仅支持App-vue）
+# `uniapp-video-player-fixed` —— 基于 HTML5 video 标签开发出来，适用于 uni-app 的高自由度视频播放器（仅支持App-vue）
 
 ![support](https://img.shields.io/badge/uni_app-App_vue-green)
 ![version](https://img.shields.io/badge/version-1.0.0-blue) 
@@ -14,22 +14,22 @@
 
 ### 安装方式
 ```bash
-npm i uniapp-video-player
+npm i uniapp-video-player-fixed
 ```
 
 ### 基础使用
 ```html
-<DomVideoPlayer
+<DomVideoPlayerFixed
   src="https://www.w3school.com.cn/i/movie.mp4"
   autoplay
   controls
 />
 
 <script>
-import DomVideoPlayer from 'uniapp-video-player'
+import DomVideoPlayerFixed from 'uniapp-video-player-fixed'
 export default {
   components: {
-    DomVideoPlayer
+    DomVideoPlayerFixed
   }
 }
 </script>
@@ -89,12 +89,12 @@ export default {
 methods: {
   // 父组件对 video 的 methods 调用案例
   play() {
-    const videoPlayer = this.$refs.domVideoPlayer
+    const videoPlayer = this.$refs.domVideoPlayerFixed
     videoPlayer.play()
   },
   // 父组件对 video 的 data 数据获取案例
   getCurrentTime() {
-    const videoPlayer = this.$refs.domVideoPlayer
+    const videoPlayer = this.$refs.domVideoPlayerFixed
     console.log(videoPlayer.currentTime)
   }
 }

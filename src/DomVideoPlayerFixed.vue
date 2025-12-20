@@ -19,6 +19,7 @@
 
 <script>
 export default {
+  name: 'DomVideoPlayerFixed',
   props: {
     src: {
       type: String,
@@ -97,7 +98,7 @@ export default {
   },
   mounted() {
     // #ifdef H5
-    this.isLog && console.warn('uniapp-video-player: 温馨提示，H5端建议使用原生HTML video标签效果更佳')
+    this.isLog && console.warn('uniapp-video-player-fixed: 温馨提示，H5端建议使用原生HTML video标签效果更佳')
     // #endif
   },
   watch: {
@@ -535,13 +536,58 @@ export default {
         this.videoEl.load()
       }
     },
-    fullScreenHandler() {
-      if (this.isApple()) {
-        this.videoEl.webkitEnterFullscreen()
-      } else {
-        this.videoEl.requestFullscreen()
-      }
-    },
+	fullScreenHandler() {
+	  const handleError = (error) => {
+		console.warn('Fullscreen error (handled):', error.message || error)
+		// 发送错误事件给Vue组件
+		this.$ownerInstance.callMethod('eventEmit', {
+		  event: 'fullscreenerror',
+		  data: error.message || 'Fullscreen failed'
+		})
+	  }	  
+	  const attemptFullscreen = () => {
+		try {
+		  if (this.isApple()) {
+			this.videoEl.webkitEnterFullscreen()
+		  } else {
+			const promise = this.videoEl.requestFullscreen()
+			// 捕获Promise错误，防止未处理错误
+			if (promise && typeof promise.catch === 'function') {
+			  promise.catch(handleError)
+			}
+		  }
+		} catch (error) {
+		  handleError(error)
+		}
+	  }
+	  
+	  // 使用 setTimeout 延迟执行，确保不在可能的异步回调中
+	  setTimeout(attemptFullscreen, 0)
+	},
+    // fullScreenHandler() {
+    //   const handleError = (error) => {
+    //   console.warn('Fullscreen error (handled):', error.message || error)
+    //   // 发送错误事件给Vue组件
+    //   this.$ownerInstance.callMethod('eventEmit', {
+    //     event: 'fullscreenerror',
+    //     data: error.message || 'Fullscreen failed'
+    //   })
+    //   }
+
+    //   try {
+    //     if (this.isApple()) {
+    //       this.videoEl.webkitEnterFullscreen()
+    //     } else {
+    //       const promise = this.videoEl.requestFullscreen()
+    //       // 捕获Promise错误，防止未处理错误
+    //       if (promise && typeof promise.catch === 'function') {
+    //         promise.catch(handleError)
+    //       }
+    //     }
+    //   } catch (error) {
+    //     handleError(error)
+    //   }
+    // },
     toSeekHandler({ sec, isDelay }) {
       const func = () => {
         if (this.videoEl) {
