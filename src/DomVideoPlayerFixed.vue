@@ -118,7 +118,6 @@
 			// 监听视频资源地址更新
 			src: {
 				handler(val) {
-					// console.info("视频地址发生变化1");
 					if (!val) return
 					setTimeout(() => {
 						this.videoSrc = val
@@ -251,7 +250,6 @@
 					const imageInfo = await uni.getImageInfo({
 						src: posterUrl
 					})
-					// console.info("视频地址发生变化2",posterUrl);
 					// 通常宽高比 > 0.9 为横屏
 					const isLandscape = imageInfo.width / imageInfo.height > 0.9
 					this.videoOrientation = {
@@ -259,7 +257,6 @@
 						width: imageInfo.width,
 						height: imageInfo.height
 					}
-					// console.info("视频地址发生变化3",this.videoOrientation);
 					// 如果是横屏且需要显示按钮，则显示全屏按钮（不管是否播放中）
 					this.showFullscreenButton = isLandscape && this.showLandscapeFullscreenButton
 
@@ -378,7 +375,6 @@
 				let finalControlsList = 'nodownload nofullscreen noremoteplayback'
 				if (controlsList) {
 					finalControlsList += ' ' + controlsList
-					console.info('finalControls', finalControlsList);
 				}
 				this.videoEl.setAttribute('controlslist', finalControlsList)
 				// controlsList && videoEl.setAttribute('controlslist', controlsList)
@@ -525,7 +521,6 @@
 					e.stopPropagation()
 					e.stopImmediatePropagation()
 					e.preventDefault()
-					console.info("testaaaaa")
 
 					// 临时禁用视频点击，防止冲突
 					this.disableVideoClick = true
@@ -561,17 +556,10 @@
 				const wrapper = document.getElementById(this.wrapperId)
 				if (wrapper) {
 					wrapper.style.position = 'relative'
-					// console.info("this.videoEl.src",this.videoEl.src)
 					if (!this.videoEl || !button) return
 					const {
 						videoOrientation
 					} = this.renderProps
-					// console.info("videoOrientation.height=",videoOrientation.height);
-					// // 获取video元素的位置和尺寸
-					// const finalHeight = window.innerHeight / 2  +  videoOrientation.height /2
-					// console.info("finalHeight=",finalHeight);
-					// const fromBottomDistance = window.innerHeight - finalHeight + 15;
-					// console.info("fromBottomDistance=",fromBottomDistance);
 					button.style.bottom = `calc(49px + env(safe-area-inset-bottom) + 128px)`
 					button.style.transform = 'translateX(-50%)' // 向左移动自身宽度的一半实现居中		
 					wrapper.append(button)
@@ -606,7 +594,6 @@
 				const {
 					forceLandscapeFullscreen
 				} = this.renderProps
-				console.info("testaaaaa2")
 				if (forceLandscapeFullscreen) {
 					// 使用自定义横屏全屏
 					this.enterLandscapeFullscreen()
