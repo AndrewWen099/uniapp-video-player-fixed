@@ -71,7 +71,7 @@
 			// 新增：横屏校验参数
 			videoSnapshotParams: {
 				type: String,
-				default: '?x-oss-process=video/snapshot,t_0,f_jpg,w_0,h_0,m_fast,ar_auto'
+				default: '?x-oss-process=video/snapshot,t_0,f_jpg,w_375,m_fast,ar_auto'
 			},
 			// 新增：是否显示横屏全屏按钮
 			showLandscapeFullscreenButton: {
