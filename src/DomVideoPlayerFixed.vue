@@ -315,7 +315,8 @@
 				// 新增：横屏样式元素
 				landscapeStyleEl: null,
 				// 新增：是否已添加横屏样式
-				landscapeStyleAdded: false
+				landscapeStyleAdded: false,
+				updateControlsList:''
 			}
 		},
 		computed: {
@@ -374,11 +375,17 @@
 				videoEl.setAttribute('webkit-playsinline', true)
 				let finalControlsList = 'nodownload nofullscreen noremoteplayback'
 				if (controlsList) {
-					finalControlsList += ' ' + controlsList
+					if(controlsList === 'checkBottom'){
+						this.updateControlsList = controlsList;
+					}else{
+					  finalControlsList += ' ' + controlsList	
+					}					
+				}else{
+					this.updateControlsList = '';
 				}
 				this.videoEl.setAttribute('controlslist', finalControlsList)
-				// controlsList && videoEl.setAttribute('controlslist', controlsList)
 				videoEl.setAttribute('disablePictureInPicture', true)
+				
 				videoEl.style.objectFit = objectFit
 				poster && (videoEl.poster = poster)
 				videoEl.style.width = '100%'
@@ -500,7 +507,7 @@
 				button.style.left = '50%' // 改为left: 50%
 				button.style.transform = 'translateX(-50%)' // 使用transform向左移动自身宽度的一半
 				button.style.zIndex = '20' // 提高z-index确保在视频上方
-				button.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+				button.style.backgroundColor = 'rgba(0, 0, 0, 0.5)' // 透明
 				button.style.color = 'white'
 				button.style.border = 'none'
 				button.style.borderRadius = '20px'
@@ -560,7 +567,14 @@
 					const {
 						videoOrientation
 					} = this.renderProps
-					button.style.bottom = `calc(49px + env(safe-area-inset-bottom) + 128px)`
+					
+					if(this.updateControlsList&&this.updateControlsList === 'checkBottom'){
+						button.style.bottom = `calc(49px + 60px)`
+						button.style.backgroundColor = 'rgba(0, 0, 0, 0.2)' // 透明
+					}else{
+						button.style.bottom = `calc(49px + env(safe-area-inset-bottom) + 128px)`
+					}
+					
 					button.style.transform = 'translateX(-50%)' // 向左移动自身宽度的一半实现居中		
 					wrapper.append(button)
 					// 确保视频元素有正确的z-index
