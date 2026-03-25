@@ -1,6 +1,6 @@
 {
   "name": "uniapp-video-player-fixed",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "main": "index.js",
   "module": "index.js",
   "description": "修复全屏错误的uniapp视频播放器",

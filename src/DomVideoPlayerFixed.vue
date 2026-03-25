@@ -6,7 +6,6 @@
 		:change:command="domVideoPlayer.triggerCommand" :func="renderFunc" :change:func="domVideoPlayer.triggerFunc"
 		@click="videoWrapperClick" />
 </template>
-
 <script>
 	export default {
 		name: 'DomVideoPlayerFixed',
@@ -82,6 +81,11 @@
 			forceLandscapeFullscreen: {
 				type: Boolean,
 				default: true
+			},
+			// 默认禁用用浏览器/系统层面的原生全屏按钮
+			disableNativeFullscreen: {
+				type: Boolean,
+				default: true
 			}
 		},
 		data() {
@@ -145,6 +149,7 @@
 					isLoading: this.isLoading,
 					playbackRate: this.playbackRate,
 					trackList: this.trackList,
+					disableNativeFullscreen: this.disableNativeFullscreen,
 					// 新增：传递视频方向和按钮显示状态
 					videoOrientation: this.videoOrientation,
 					showFullscreenButton: this.showFullscreenButton,
@@ -373,7 +378,11 @@
 				videoEl.setAttribute('preload', preload)
 				videoEl.setAttribute('playsinline', true)
 				videoEl.setAttribute('webkit-playsinline', true)
-				let finalControlsList = 'nodownload nofullscreen noremoteplayback'
+				let finalControlsList = 'nodownload noremoteplayback'
+				// 由外部开关决定是否把 nofullscreen 加入 controlslist
+				if (this.renderProps?.disableNativeFullscreen !== false) {
+					finalControlsList += ' nofullscreen'
+				}
 				if (controlsList) {
 					if(controlsList === 'checkBottom'){
 						this.updateControlsList = controlsList;
@@ -965,6 +974,11 @@
 						value: duration
 					})
 
+					// autoplay=false 时不探帧播放，但需要让 loading 遮罩立刻消失
+					if (!this.renderProps?.autoplay && this.loadingEl) {
+						this.loadingEl.style.display = 'none'
+					}
+
 					// 加载首帧视频 模拟出封面图
 					this.loadFirstFrame()
 				}
@@ -1096,12 +1110,15 @@
 					poster,
 					muted
 				} = this.renderProps
+				
+				if (!autoplay) return
 				if (this.isApple()) {
 					if (poster) return
 					this.videoEl.play()
 					if (!autoplay) {
 						this.videoEl.pause()
 					}
+					
 				} else {
 					if (poster) return
 					this.videoEl.muted = true
@@ -1226,4 +1243,3 @@
 		position: relative;
 	}
 </style>
-<!--1.3.2-->
