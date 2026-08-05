@@ -107,6 +107,7 @@
 				videoOrientation: null,
 				// 新增：是否显示全屏按钮
 				showFullscreenButton: false,
+				dynamicObjectFit: null, // 新增：动态 object-fit
 				// 新增：是否全屏状态
 				isFullscreen: false,
 				wasPlayingBeforeFullscreen: false, // 新增：保存全屏前的播放状态
@@ -144,12 +145,12 @@
 					controls: this.controls,
 					controlsList: this.controlsList,
 					loop: this.loop,
-					objectFit: this.objectFit,
 					poster: this.poster,
 					isLoading: this.isLoading,
 					playbackRate: this.playbackRate,
 					trackList: this.trackList,
 					disableNativeFullscreen: this.disableNativeFullscreen,
+					objectFit: this.dynamicObjectFit || this.objectFit, // 动态值优先
 					// 新增：传递视频方向和按钮显示状态
 					videoOrientation: this.videoOrientation,
 					showFullscreenButton: this.showFullscreenButton,
@@ -264,7 +265,7 @@
 					}
 					// 如果是横屏且需要显示按钮，则显示全屏按钮（不管是否播放中）
 					this.showFullscreenButton = isLandscape && this.showLandscapeFullscreenButton
-
+					this.dynamicObjectFit = isLandscape ? 'contain' : 'cover'
 					// 发送方向检测完成事件
 					this.$emit('orientation-detected', {
 						isLandscape,
@@ -393,13 +394,12 @@
 					this.updateControlsList = '';
 				}
 				this.videoEl.setAttribute('controlslist', finalControlsList)
-				videoEl.setAttribute('disablePictureInPicture', true)
-				
-				videoEl.style.objectFit = objectFit
+				videoEl.setAttribute('disablePictureInPicture', true)				
 				poster && (videoEl.poster = poster)
 				videoEl.style.width = '100%'
 				videoEl.style.height = '100%'
-
+				videoEl.style.objectFit = objectFit; // 添加此行
+				
 				// 插入视频元素
 				const playerWrapper = document.getElementById(this.wrapperId)
 				playerWrapper.insertBefore(videoEl, playerWrapper.firstChild)
@@ -1209,7 +1209,8 @@
 					muted,
 					controls,
 					loop,
-					playbackRate
+					playbackRate,
+					objectFit
 				} = props
 				if (this.videoEl) {
 					this.videoEl.autoplay = autoplay
@@ -1217,6 +1218,7 @@
 					this.videoEl.loop = loop
 					this.videoEl.muted = muted
 					this.videoEl.playbackRate = playbackRate
+					this.videoEl.style.objectFit = objectFit;
 					this.createTrack()
 				}
 
